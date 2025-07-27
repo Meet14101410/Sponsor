@@ -1,0 +1,184 @@
+// RegulatoryDocument.java
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
+
+public class RegulatoryDocument {
+    private String documentId;
+    private String trialId;
+    private String documentType; // E.g., "Protocol", "IB", "ICF", "IND_Application"
+    private String documentTitle;
+    private String version;
+    private String filePath; // Path to storage (e.g., S3 URL, file share)
+    private String author;
+    private LocalDateTime creationDate;
+    private LocalDateTime lastModifiedDate;
+    private String status; // E.g., "Draft", "Approved", "Submitted", "Archived"
+
+    public RegulatoryDocument(String trialId, String documentType, String documentTitle,
+                              String version, String filePath, String author) {
+        this.documentId = UUID.randomUUID().toString();
+        this.trialId = trialId;
+        this.documentType = documentType;
+        this.documentTitle = documentTitle;
+        this.version = version;
+        this.filePath = filePath;
+        this.author = author;
+        this.creationDate = LocalDateTime.now();
+        this.lastModifiedDate = LocalDateTime.now();
+        this.status = "Draft"; // Default status
+    }
+
+    // Getters
+    public String getDocumentId() { return documentId; }
+    public String getTrialId() { return trialId; }
+    public String getDocumentType() { return documentType; }
+    public String getDocumentTitle() { return documentTitle; }
+    public String getVersion() { return version; }
+    public String getFilePath() { return filePath; }
+    public String getAuthor() { return author; }
+    public LocalDateTime getCreationDate() { return creationDate; }
+    public LocalDateTime getLastModifiedDate() { return lastModifiedDate; }
+    public String getStatus() { return status; }
+
+    // Setters for mutable properties (e.g., during updates/workflow)
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+        this.lastModifiedDate = LocalDateTime.now();
+    }
+    public void setStatus(String status) {
+        this.status = status;
+        this.lastModifiedDate = LocalDateTime.now();
+    }
+    public void setVersion(String version) {
+        this.version = version;
+        this.lastModifiedDate = LocalDateTime.now();
+    }
+    public void setLastModifiedDate(LocalDateTime lastModifiedDate) { // For manual updates if needed
+        this.lastModifiedDate = lastModifiedDate;
+    }
+
+    @Override
+    public String toString() {
+        return "RegulatoryDocument{" +
+               "documentId='" + documentId + '\'' +
+               ", trialId='" + trialId + '\'' +
+               ", type='" + documentType + '\'' +
+               ", title='" + documentTitle + '\'' +
+               ", version='" + version + '\'' +
+               ", status='" + status + '\'' +
+               ", lastModified=" + lastModifiedDate.toLocalDate() +
+               '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RegulatoryDocument that = (RegulatoryDocument) o;
+        return Objects.equals(documentId, that.documentId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(documentId);
+    }
+}
+
+// DocumentManagementSystem.java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+public class DocumentManagementSystem {
+    // In a real system, this would be a database connection/DAO
+    private Map<String, RegulatoryDocument> documents; // documentId -> latest document
+
+    public DocumentManagementSystem() {
+        this.documents = new HashMap<>();
+    }
+
+    public void uploadNewDocument(RegulatoryDocument doc) {
+        if (documents.containsKey(doc.getDocumentId())) {
+            System.out.println("Error: Document with ID " + doc.getDocumentId() + " already exists. Use update.");
+            return;
+        }
+        documents.put(doc.getDocumentId(), doc);
+        System.out.println("Document uploaded: " + doc.getDocumentTitle() + " (v" + doc.getVersion() + ")");
+    }
+
+    public Optional<RegulatoryDocument> getDocumentById(String documentId) {
+        return Optional.ofNullable(documents.get(documentId));
+    }
+
+    public List<RegulatoryDocument> getDocumentsByTrial(String trialId) {
+        List<RegulatoryDocument> trialDocs = new ArrayList<>();
+        for (RegulatoryDocument doc : documents.values()) {
+            if (doc.getTrialId().equals(trialId)) {
+                trialDocs.add(doc);
+            }
+        }
+        return trialDocs;
+    }
+
+    // Simulate updating a document (e.g., new version submitted)
+    public void updateDocumentVersion(String documentId, String newVersion, String newFilePath, String newStatus) {
+        getDocumentById(documentId).ifPresent(doc -> {
+            // In a real system, you'd save the old version to an archive
+            doc.setVersion(newVersion);
+            doc.setFilePath(newFilePath);
+            doc.setStatus(newStatus);
+            System.out.println("Document " + doc.getDocumentTitle() + " updated to version " + newVersion + ". Status: " + newStatus);
+        });
+    }
+
+    public void updateDocumentStatus(String documentId, String newStatus) {
+        getDocumentById(documentId).ifPresent(doc -> {
+            doc.setStatus(newStatus);
+            System.out.println("Document " + doc.getDocumentTitle() + " status updated to: " + newStatus);
+        });
+    }
+
+    public List<RegulatoryDocument> getAllDocuments() {
+        return new ArrayList<>(documents.values());
+    }
+}
+
+// MainSponsorProcess.java (Demonstration of usage)
+import java.time.LocalDate;
+
+public class MainSponsorProcess {
+    public static void main(String[] args) {
+        DocumentManagementSystem dms = new DocumentManagementSystem();
+
+        // Sponsor uploads initial protocol
+        RegulatoryDocument protocolV1 = new RegulatoryDocument(
+            "CT-001A", "Protocol", "Phase 3 Oncology Study Protocol",
+            "1.0", "s3://ct001a/protocol_v1.pdf", "Dr. Emily White"
+        );
+        dms.uploadNewDocument(protocolV1);
+
+        // Upload Investigational Brochure
+        RegulatoryDocument ib = new RegulatoryDocument(
+            "CT-001A", "Investigator Brochure", "Investigator Brochure Drug X",
+            "5.0", "s3://ct001a/ib_v5.pdf", "Dr. John Doe"
+        );
+        dms.uploadNewDocument(ib);
+
+        // Sponsor updates protocol to a new version after an amendment
+        dms.updateDocumentVersion(
+            protocolV1.getDocumentId(), "2.0", "s3://ct001a/protocol_v2_amendment1.pdf", "Submitted to Regulatory"
+        );
+
+        // Sponsor approves the IB
+        dms.updateDocumentStatus(ib.getDocumentId(), "Approved");
+
+        System.out.println("\n--- All Documents in DMS ---");
+        dms.getAllDocuments().forEach(System.out::println);
+
+        System.out.println("\n--- Documents for CT-001A ---");
+        dms.getDocumentsByTrial("CT-001A").forEach(System.out::println);
+    }
+}
