@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Clinical Trial Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        .header { background-color: #004d40; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 28px; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 25px; font-size: 16px; transition: color 0.3s ease; }
+        .nav-links a:hover { color: #80cbc4; }
+        .container { padding: 30px; max-width: 1200px; margin: 30px auto; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .card { background-color: #e0f2f1; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.3s ease; border-left: 5px solid #00796b; }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { color: #004d40; margin-top: 0; font-size: 22px; border-bottom: 1px solid #b2dfdb; padding-bottom: 10px; margin-bottom: 15px; }
+        .card p { margin: 8px 0; font-size: 15px; line-height: 1.5; }
+        .card .metric { font-size: 2.2em; font-weight: bold; color: #00796b; margin-top: 10px; }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85em; }
+        .status-active { background-color: #e8f5e9; color: #2e7d32; }
+        .status-planned { background-color: #e3f2fd; color: #1976d2; }
+        .status-completed { background-color: #f3e5f5; color: #6a1b9a; }
+        .status-onhold { background-color: #fff3e0; color: #ef6c00; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .data-table th, .data-table td { border: 1px solid #e0e0e0; padding: 12px 15px; text-align: left; }
+        .data-table th { background-color: #f0f0f0; color: #444; font-weight: bold; }
+        .data-table tr:nth-child(even) { background-color: #fcfcfc; }
+        .data-table tr:hover { background-color: #e0f7fa; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Sponsor Dashboard</h1>
+        <nav class="nav-links">
+            <a href="#">Trials</a>
+            <a href="#">Sites</a>
+            <a href="#">Patients</a>
+            <a href="#">Reports</a>
+            <a href="#">Settings</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <h2>Overall Study Portfolio Summary</h2>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Total Active Trials</h3>
+                <p class="metric">5</p>
+                <p>Currently ongoing studies.</p>
+            </div>
+            <div class="card">
+                <h3>Patients Enrolled</h3>
+                <p class="metric">1250</p>
+                <p>Across all active trials.</p>
+            </div>
+            <div class="card">
+                <h3>Safety Alerts (Last 24h)</h3>
+                <p class="metric" style="color: #d32f2f;">3</p>
+                <p>Urgent attention required.</p>
+            </div>
+            <div class="card">
+                <h3>Data Queries Open</h3>
+                <p class="metric" style="color: #ffb300;">87</p>
+                <p>Pending resolution by sites.</p>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 40px; border-bottom: 2px solid #00796b; padding-bottom: 10px;">Individual Trial Status</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Trial ID</th>
+                    <th>Therapeutic Area</th>
+                    <th>Enrollment Target</th>
+                    <th>Enrolled</th>
+                    <th>Status</th>
+                    <th>Last Update</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>CT-001A</td>
+                    <td>Oncology</td>
+                    <td>300</td>
+                    <td>285</td>
+                    <td><span class="status-active">Active</span></td>
+                    <td>2025-07-26</td>
+                    <td><a href="#">View Details</a></td>
+                </tr>
+                <tr>
+                    <td>CT-002B</td>
+                    <td>Cardiology</td>
+                    <td>500</td>
+                    <td>420</td>
+                    <td><span class="status-active">Active</span></td>
+                    <td>2025-07-25</td>
+                    <td><a href="#">View Details</a></td>
+                </tr>
+                <tr>
+                    <td>CT-003C</td>
+                    <td>Neurology</td>
+                    <td>150</td>
+                    <td>150</td>
+                    <td><span class="status-completed">Completed</span></td>
+                    <td>2025-06-30</td>
+                    <td><a href="#">View Details</a></td>
+                </tr>
+                <tr>
+                    <td>CT-004D</td>
+                    <td>Immunology</td>
+                    <td>200</td>
+                    <td>50</td>
+                    <td><span class="status-active">Active</span></td>
+                    <td>2025-07-27</td>
+                    <td><a href="#">View Details</a></td>
+                </tr>
+                 <tr>
+                    <td>CT-005E</td>
+                    <td>Infectious Disease</td>
+                    <td>100</td>
+                    <td>0</td>
+                    <td><span class="status-planned">Planned</span></td>
+                    <td>2025-07-20</td>
+                    <td><a href="#">View Details</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
