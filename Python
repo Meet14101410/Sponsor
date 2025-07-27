@@ -1,0 +1,120 @@
+# Save this as app_sponsor.py
+from flask import Flask, jsonify, request
+from datetime import datetime
+
+app = Flask(__name__)
+
+# --- In a real application, these would be fetched from a database ---
+# Mock data representing trials and their progress
+trials_data = [
+    {
+        "trial_id": "CT-001A",
+        "therapeutic_area": "Oncology",
+        "enrollment_target": 300,
+        "enrolled_patients": 285,
+        "status": "Active",
+        "last_update": "2025-07-26",
+        "safety_alerts_24h": 1,
+        "open_queries": 15
+    },
+    {
+        "trial_id": "CT-002B",
+        "therapeutic_area": "Cardiology",
+        "enrollment_target": 500,
+        "enrolled_patients": 420,
+        "status": "Active",
+        "last_update": "2025-07-25",
+        "safety_alerts_24h": 0,
+        "open_queries": 22
+    },
+    {
+        "trial_id": "CT-003C",
+        "therapeutic_area": "Neurology",
+        "enrollment_target": 150,
+        "enrolled_patients": 150,
+        "status": "Completed",
+        "last_update": "2025-06-30",
+        "safety_alerts_24h": 0,
+        "open_queries": 0
+    },
+    {
+        "trial_id": "CT-004D",
+        "therapeutic_area": "Immunology",
+        "enrollment_target": 200,
+        "enrolled_patients": 50,
+        "status": "Active",
+        "last_update": "2025-07-27",
+        "safety_alerts_24h": 2,
+        "open_queries": 50
+    },
+    {
+        "trial_id": "CT-005E",
+        "therapeutic_area": "Infectious Disease",
+        "enrollment_target": 100,
+        "enrolled_patients": 0,
+        "status": "Planned",
+        "last_update": "2025-07-20",
+        "safety_alerts_24h": 0,
+        "open_queries": 0
+    }
+]
+# -----------------------------------------------------------------
+
+@app.route('/api/trials/summary', methods=['GET'])
+def get_trials_summary():
+    """Returns a summary of all clinical trials."""
+    total_active = sum(1 for t in trials_data if t['status'] == 'Active')
+    total_enrolled = sum(t['enrolled_patients'] for t in trials_data)
+    total_safety_alerts = sum(t['safety_alerts_24h'] for t in trials_data)
+    total_open_queries = sum(t['open_queries'] for t in trials_data)
+
+    return jsonify({
+        "total_active_trials": total_active,
+        "total_enrolled_patients": total_enrolled,
+        "total_safety_alerts_24h": total_safety_alerts,
+        "total_open_queries": total_open_queries
+    })
+
+@app.route('/api/trials', methods=['GET'])
+def get_all_trials():
+    """Returns detailed information for all clinical trials."""
+    # In a real app, you might add pagination, filtering, etc.
+    return jsonify(trials_data)
+
+@app.route('/api/trials/<string:trial_id>', methods=['GET'])
+def get_trial_details(trial_id):
+    """Returns details for a specific trial ID."""
+    trial = next((t for t in trials_data if t['trial_id'] == trial_id), None)
+    if trial:
+        return jsonify(trial)
+    return jsonify({"message": "Trial not found"}), 404
+
+@app.route('/api/trials/enrollment_progress/<string:trial_id>', methods=['GET'])
+def get_enrollment_progress(trial_id):
+    """Calculates enrollment progress for a specific trial."""
+    trial = next((t for t in trials_data if t['trial_id'] == trial_id), None)
+    if trial:
+        target = trial.get("enrollment_target", 0)
+        enrolled = trial.get("enrolled_patients", 0)
+        if target > 0:
+            progress = (enrolled / target) * 100
+        else:
+            progress = 0 # Or handle as error if target must be > 0
+        return jsonify({
+            "trial_id": trial_id,
+            "enrollment_target": target,
+            "enrolled_patients": enrolled,
+            "progress_percent": round(progress, 2)
+        })
+    return jsonify({"message": "Trial not found"}), 404
+
+if __name__ == '__main__':
+    # To run:
+    # 1. pip install flask
+    # 2. python app_sponsor.py
+    # 3. Access endpoints like:
+    #    http://127.0.0.1:5000/api/trials/summary
+    #    http://127.0.0.1:5000/api/trials
+    #    http://127.0.0.1:5000/api/trials/CT-001A
+    #    http://127.00.1:5000/api/trials/enrollment_progress/CT-001A
+    app.run(debug=True)
