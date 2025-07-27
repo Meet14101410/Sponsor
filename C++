@@ -1,0 +1,116 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <iomanip> // For std::fixed and std::setprecision
+
+// Structure for a budget category
+struct BudgetCategory {
+    std::string categoryName;
+    double budgetedAmount;
+    double actualSpend;
+
+    BudgetCategory(const std::string& name, double budgeted)
+        : categoryName(name), budgetedAmount(budgeted), actualSpend(0.0) {}
+
+    void recordSpend(double amount) {
+        if (amount < 0) {
+            std::cerr << "Error: Spend amount cannot be negative." << std::endl;
+            return;
+        }
+        actualSpend += amount;
+        std::cout << "Spent " << std::fixed << std::setprecision(2) << amount
+                  << " in " << categoryName << ". Current actual: " << actualSpend << std::endl;
+    }
+
+    double getVariance() const {
+        return budgetedAmount - actualSpend;
+    }
+
+    void print() const {
+        std::cout << std::fixed << std::setprecision(2);
+        std::cout << "  Category: " << categoryName
+                  << ", Budgeted: $" << budgetedAmount
+                  << ", Actual: $" << actualSpend
+                  << ", Variance: $" << getVariance()
+                  << (getVariance() < 0 ? " (Over Budget)" : " (Under/On Budget)")
+                  << std::endl;
+    }
+};
+
+// Class to manage the budget for a single clinical trial
+class TrialBudgetManager {
+public:
+    TrialBudgetManager(const std::string& trialId, double totalBudget)
+        : trialId_(trialId), totalBudget_(totalBudget) {
+        std::cout << "Budget Manager initialized for Trial " << trialId_
+                  << " with total budget: $" << std::fixed << std::setprecision(2) << totalBudget_ << std::endl;
+    }
+
+    void addCategory(const std::string& categoryName, double budgetedAmount) {
+        if (categories_.count(categoryName)) {
+            std::cerr << "Error: Category '" << categoryName << "' already exists." << std::endl;
+            return;
+        }
+        categories_.emplace(categoryName, BudgetCategory(categoryName, budgetedAmount));
+        std::cout << "Added budget category: " << categoryName << " with $" << budgetedAmount << std::endl;
+    }
+
+    void recordCategorySpend(const std::string& categoryName, double amount) {
+        if (categories_.count(categoryName)) {
+            categories_.at(categoryName).recordSpend(amount);
+            calculateTotalSpend();
+        } else {
+            std::cerr << "Error: Category '" << categoryName << "' not found." << std::endl;
+        }
+    }
+
+    void printBudgetSummary() const {
+        std::cout << "\n--- Budget Summary for Trial " << trialId_ << " ---" << std::endl;
+        std::cout << std::fixed << std::setprecision(2);
+        std::cout << "Total Budget: $" << totalBudget_ << std::endl;
+        std::cout << "Total Actual Spend: $" << totalActualSpend_ << std::endl;
+        std::cout << "Remaining Budget: $" << totalBudget_ - totalActualSpend_ << std::endl;
+
+        std::cout << "\nCategory Breakdown:" << std::endl;
+        for (const auto& pair : categories_) {
+            pair.second.print();
+        }
+        std::cout << "------------------------------------------\n" << std::endl;
+    }
+
+private:
+    std::string trialId_;
+    double totalBudget_;
+    double totalActualSpend_ = 0.0;
+    std::map<std::string, BudgetCategory> categories_; // Map category name to BudgetCategory object
+
+    void calculateTotalSpend() {
+        totalActualSpend_ = 0.0;
+        for (const auto& pair : categories_) {
+            totalActualSpend_ += pair.second.actualSpend;
+        }
+    }
+};
+
+int main() {
+    TrialBudgetManager trial1Budget("CT-001A", 1500000.00); // 1.5 Million USD
+
+    trial1Budget.addCategory("Site Payments", 800000.00);
+    trial1Budget.addCategory("CRO Services", 500000.00);
+    trial1Budget.addCategory("Lab Costs", 150000.00);
+    trial1Budget.addCategory("Regulatory Fees", 50000.00);
+
+    trial1Budget.recordCategorySpend("Site Payments", 150000.00);
+    trial1Budget.recordCategorySpend("CRO Services", 80000.00);
+    trial1Budget.recordCategorySpend("Lab Costs", 20000.00);
+    trial1Budget.recordCategorySpend("Site Payments", 200000.00); // Another spend
+    trial1Budget.recordCategorySpend("Regulatory Fees", 50000.00); // Full spend on regulatory
+
+    trial1Budget.printBudgetSummary();
+
+    trial1Budget.recordCategorySpend("CRO Services", 450000.00); // Over budget on CRO
+    trial1Budget.printBudgetSummary();
+
+    return 0;
+}
